@@ -13,6 +13,7 @@ from analysis.technical import (
     generate_commentary,
 )
 from analysis.seasonal import compute_seasonal_pattern, get_seasonal_commentary
+from analysis.qa_engine import is_question, generate_answer
 from components.charts import create_candlestick_chart, create_seasonal_chart
 from data.windowing import window_for_technical, window_for_seasonal
 from components.analysis_card import (
@@ -125,21 +126,34 @@ def _render_single_asset(
 
     st.markdown("---")
 
-    # External context input
+    # External context / question input
     ext_label = (
-        "📝 Harici veri veya bağlam (jeopolitik, politika müdahalesi, vb.) — yoksa boş bırakın"
+        "📝 Soru sorun veya harici bağlam girin (ör: 'Swap açılırsa ne olur?', 'OPEC üretim kesti')"
         if lang == "tr"
-        else "📝 External context (geopolitical, policy intervention, etc.) — leave empty if none"
+        else "📝 Ask a question or provide context (e.g., 'What if rates drop?', 'OPEC cut production')"
     )
     external_context = st.text_area(
         ext_label, value="", height=80,
         key=f"ext_context_detail_{asset_key}",
     )
 
-    # Technical commentary
-    title = "💬 " + ("Teknik Yorum" if lang == "tr" else "Technical Commentary")
-    comments = generate_commentary(df, name, lang, external_context=external_context)
-    render_commentary(comments, title, unified=True)
+    # Detect if input is a question or context
+    user_input = external_context.strip() if external_context else ""
+    if user_input and is_question(user_input):
+        # Q&A mode
+        qa_title = "💬 " + ("Yanıt" if lang == "tr" else "Answer")
+        answer = generate_answer(user_input, df, name, asset_key, lang)
+        render_commentary([answer], qa_title, unified=True)
+
+        # Still show technical commentary below (without external context)
+        title = "📊 " + ("Teknik Yorum" if lang == "tr" else "Technical Commentary")
+        comments = generate_commentary(df, name, lang, asset_key=asset_key)
+        render_commentary(comments, title, unified=True)
+    else:
+        # Context mode (original behavior)
+        title = "💬 " + ("Teknik Yorum" if lang == "tr" else "Technical Commentary")
+        comments = generate_commentary(df, name, lang, external_context=external_context, asset_key=asset_key)
+        render_commentary(comments, title, unified=True)
 
     # Seasonal analysis (uses full 5y data for pattern depth, with recency weighting)
     df_seasonal = window_for_seasonal(df_full)

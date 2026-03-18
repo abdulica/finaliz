@@ -26,6 +26,22 @@ ASSETS = {
         "color": "#ff7f0e",
         "source": "yfinance",
     },
+    "USDJPY": {
+        "ticker": "USDJPY=X",
+        "name_tr": "Dolar/Yen",
+        "name_en": "USD/JPY",
+        "category": "currency",
+        "color": "#bc5090",
+        "source": "yfinance",
+    },
+    "USDCHF": {
+        "ticker": "USDCHF=X",
+        "name_tr": "Dolar/İsviçre Frangı",
+        "name_en": "USD/CHF",
+        "category": "currency",
+        "color": "#58508d",
+        "source": "yfinance",
+    },
     "GOLD": {
         "ticker": "GC=F",
         "name_tr": "Altın (USD/oz)",

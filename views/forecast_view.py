@@ -7,6 +7,7 @@ import numpy as np
 from config import ASSETS
 from analysis.technical import compute_all_indicators, get_signal_summary, generate_commentary
 from analysis.forecast import run_forecast, generate_forecast_commentary
+from analysis.qa_engine import is_question, generate_answer
 from components.charts import create_forecast_chart, create_relationship_chart
 from data.windowing import window_for_forecast, window_for_technical
 from components.analysis_card import (
@@ -137,22 +138,35 @@ def _render_single_forecast(
     df_with_ta = compute_all_indicators(df_ta.copy())
     ta_summary = get_signal_summary(df_with_ta)
 
-    # External context input
+    # External context / question input
     ext_label = (
-        "📝 Harici veri veya bağlam (jeopolitik, politika müdahalesi, vb.) — yoksa boş bırakın"
+        "📝 Soru sorun veya harici bağlam girin (ör: 'Faiz artarsa ne olur?', 'Jeopolitik risk yüksek')"
         if lang == "tr"
-        else "📝 External context (geopolitical, policy intervention, etc.) — leave empty if none"
+        else "📝 Ask a question or provide context (e.g., 'What if rates rise?', 'Geopolitical risk high')"
     )
     external_context = st.text_area(
         ext_label, value="", height=80,
         key=f"ext_context_forecast_{asset_key}",
     )
 
-    # Technical commentary
-    tech_title = "💬 " + ("Teknik Yorum" if lang == "tr" else "Technical Commentary")
-    tech_comments = generate_commentary(df_with_ta, name, lang, external_context=external_context)
-    if tech_comments:
-        render_commentary(tech_comments, tech_title, unified=True)
+    # Detect if input is a question or context
+    user_input = external_context.strip() if external_context else ""
+    if user_input and is_question(user_input):
+        # Q&A mode
+        qa_title = "💬 " + ("Yanıt" if lang == "tr" else "Answer")
+        answer = generate_answer(user_input, df_with_ta, name, asset_key, lang)
+        render_commentary([answer], qa_title, unified=True)
+
+        tech_title = "📊 " + ("Teknik Yorum" if lang == "tr" else "Technical Commentary")
+        tech_comments = generate_commentary(df_with_ta, name, lang, asset_key=asset_key)
+        if tech_comments:
+            render_commentary(tech_comments, tech_title, unified=True)
+    else:
+        # Context mode
+        tech_title = "💬 " + ("Teknik Yorum" if lang == "tr" else "Technical Commentary")
+        tech_comments = generate_commentary(df_with_ta, name, lang, external_context=external_context, asset_key=asset_key)
+        if tech_comments:
+            render_commentary(tech_comments, tech_title, unified=True)
 
     # Forecast commentary
     fc_title = "💬 " + ("Tahmin Yorumu" if lang == "tr" else "Forecast Commentary")
