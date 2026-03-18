@@ -22,18 +22,20 @@ def render_commentary(comments: list[str], title: str = "", unified: bool = Fals
     if unified:
         merged = "<br><br>".join(comments)
         st.markdown(
-            f'<div style="background-color: #1e1e2e; padding: 20px; '
+            f'<div style="background-color: #1e1e2e; padding: 15px; '
             f'border-radius: 10px; '
-            f'border-left: 4px solid #FFD700; font-size: 0.95em; line-height: 1.7;">'
+            f'border-left: 4px solid #FFD700; font-size: clamp(0.8em, 2.5vw, 0.95em); '
+            f'line-height: 1.7; word-wrap: break-word; overflow-wrap: break-word;">'
             f"{merged}</div>",
             unsafe_allow_html=True,
         )
     else:
         for comment in comments:
             st.markdown(
-                f'<div style="background-color: #1e1e2e; padding: 15px; '
+                f'<div style="background-color: #1e1e2e; padding: 12px; '
                 f'border-radius: 10px; margin-bottom: 10px; '
-                f'border-left: 4px solid #FFD700; font-size: 0.95em;">'
+                f'border-left: 4px solid #FFD700; font-size: clamp(0.8em, 2.5vw, 0.95em); '
+                f'word-wrap: break-word; overflow-wrap: break-word;">'
                 f"{comment}</div>",
                 unsafe_allow_html=True,
             )

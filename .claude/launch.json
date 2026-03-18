@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "finaliz",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "streamlit", "run", "app.py", "--server.headless", "true"],
+      "runtimeExecutable": "C:/Python314/python.exe",
+      "runtimeArgs": ["-m", "streamlit", "run", "C:/Users/abdulica/projects/finaliz/app.py", "--server.headless", "true", "--server.port", "8501"],
       "port": 8501
     }
   ]

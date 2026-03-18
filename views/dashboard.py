@@ -52,20 +52,20 @@ def render_dashboard(data: dict[str, pd.DataFrame], lang: str = "tr"):
 
     st.markdown("---")
 
-    # Mini charts grid
+    # Mini charts grid — 2 per row for better mobile compatibility
     st.subheader("📈 " + ("Son 1 Hafta" if lang == "tr" else "Last 1 Week"))
-    chart_cols = st.columns(min(len(data), 4))
-    for i, (key, df) in enumerate(data.items()):
-        if df is None or df.empty:
-            continue
-        col = chart_cols[i % len(chart_cols)]
-        name = get_asset_name(key, ASSETS[key], lang)
-        color = ASSETS[key]["color"]
-        with col:
-            st.caption(name)
-            last_30 = df["Close"].tail(7)
-            fig = create_mini_sparkline(last_30, color)
-            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    items = [(k, df) for k, df in data.items() if df is not None and not df.empty]
+    for row_start in range(0, len(items), 2):
+        row_items = items[row_start:row_start + 2]
+        chart_cols = st.columns(len(row_items))
+        for col, (key, df) in zip(chart_cols, row_items):
+            name = get_asset_name(key, ASSETS[key], lang)
+            color = ASSETS[key]["color"]
+            with col:
+                st.caption(name)
+                last_7 = df["Close"].tail(7)
+                fig = create_mini_sparkline(last_7, color)
+                st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     # Market sentiment summary
     st.markdown("---")

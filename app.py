@@ -30,13 +30,62 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Viewport meta for mobile
+st.markdown(
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">',
+    unsafe_allow_html=True,
+)
+
 # Custom CSS
 st.markdown(
     """
     <style>
+    /* Base */
     .stApp { background-color: #0e1117; }
     .stMetric { background-color: #1e1e2e; padding: 10px; border-radius: 8px; }
     div[data-testid="stMetricValue"] { font-size: 1.3rem; }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+        /* Sidebar auto-collapse */
+        section[data-testid="stSidebar"] { width: 0px; min-width: 0px; }
+        section[data-testid="stSidebar"][aria-expanded="true"] { width: 280px; min-width: 280px; }
+
+        /* Stack columns vertically */
+        div[data-testid="stHorizontalBlock"] {
+            flex-wrap: wrap !important;
+        }
+        div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+            width: 100% !important;
+            flex: 1 1 100% !important;
+            min-width: 100% !important;
+        }
+
+        /* Smaller fonts */
+        div[data-testid="stMetricValue"] { font-size: 1rem; }
+        div[data-testid="stMetricLabel"] { font-size: 0.75rem; }
+        div[data-testid="stMetricDelta"] { font-size: 0.7rem; }
+
+        /* Charts full width */
+        .js-plotly-plot { width: 100% !important; }
+
+        /* Reduce padding */
+        .block-container { padding: 0.5rem 1rem !important; }
+
+        /* Tables scroll horizontal */
+        div[data-testid="stDataFrame"] { overflow-x: auto; }
+
+        /* Subheader smaller */
+        h2, h3 { font-size: 1.1rem !important; }
+    }
+
+    /* Tablet tweaks */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+            min-width: 45% !important;
+        }
+        .block-container { padding: 1rem !important; }
+    }
     </style>
     """,
     unsafe_allow_html=True,
