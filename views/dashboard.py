@@ -19,35 +19,59 @@ def render_dashboard(data: dict[str, pd.DataFrame], lang: str = "tr"):
         st.warning(t("no_data", lang))
         return
 
-    # Summary metrics row
-    cols = st.columns(min(len(prices), 4))
-    for i, (key, info) in enumerate(prices.items()):
-        col = cols[i % len(cols)]
-        name = get_asset_name(key, ASSETS[key], lang)
-        delta_str = f"{info['change_pct']:+.2f}%"
-        with col:
-            st.metric(
-                label=name,
-                value=f"${info['close']:,.2f}",
-                delta=delta_str,
-            )
+    # Daily change cards
+    daily_title = "📅 Günlük Değişim" if lang == "tr" else "📅 Daily Change"
+    st.subheader(daily_title)
 
-    st.markdown("---")
+    high_lbl = "En Yüksek" if lang == "tr" else "High"
+    low_lbl = "En Düşük" if lang == "tr" else "Low"
 
-    # Detailed table
-    table_data = []
-    for key, info in prices.items():
-        name = get_asset_name(key, ASSETS[key], lang)
-        table_data.append({
-            ("Varlık" if lang == "tr" else "Asset"): name,
-            (t("dash_price", lang)): f"${info['close']:,.2f}",
-            (t("dash_change", lang)): f"${info['change']:+,.2f}",
-            (t("dash_change_pct", lang)): f"{info['change_pct']:+.2f}%",
-            (t("dash_high", lang)): f"${info['high']:,.2f}",
-            (t("dash_low", lang)): f"${info['low']:,.2f}",
-        })
-
-    st.dataframe(pd.DataFrame(table_data), use_container_width=True, hide_index=True)
+    price_items = list(prices.items())
+    for row_start in range(0, len(price_items), 3):
+        row = price_items[row_start:row_start + 3]
+        cols = st.columns(len(row))
+        for col, (key, info) in zip(cols, row):
+            name = get_asset_name(key, ASSETS[key], lang)
+            pct = info["change_pct"]
+            change = info["change"]
+            close = info["close"]
+            high = info["high"]
+            low = info["low"]
+            is_up = pct >= 0
+            arrow = "▲" if is_up else "▼"
+            pct_color = "#26a69a" if is_up else "#ef5350"
+            border_color = "#26a69a" if is_up else "#ef5350"
+            # Vertical bar position (bottom = low, top = high)
+            rng = high - low
+            pos_pct = ((close - low) / rng * 100) if rng > 0 else 50
+            bar_color = "#26a69a" if is_up else "#ef5350"
+            with col:
+                st.markdown(
+                    f'<div style="background:#1e1e2e; padding:14px; border-radius:10px; '
+                    f'border-left:4px solid {border_color}; margin-bottom:8px;">'
+                    # Header: name + price
+                    f'<div style="display:flex; justify-content:space-between; align-items:flex-start;">'
+                    f'<div>'
+                    f'<div style="color:#fff; font-size:1.05em; font-weight:bold; margin-bottom:4px;">{name}</div>'
+                    f'<div style="font-size:1.3em; font-weight:bold; color:#fff;">${close:,.2f}</div>'
+                    f'<div style="color:{pct_color}; font-size:1.05em; font-weight:bold; margin-top:4px;">'
+                    f'{arrow} {pct:+.2f}%'
+                    f'<span style="color:#888; font-size:0.75em; font-weight:normal; margin-left:6px;">'
+                    f'${change:+,.2f}</span></div>'
+                    f'</div>'
+                    # Vertical bar
+                    f'<div style="display:flex; flex-direction:column; align-items:center; min-width:40px;">'
+                    f'<span style="color:#26a69a; font-size:0.65em; margin-bottom:2px;">${high:,.2f}</span>'
+                    f'<div style="background:#333; border-radius:4px; width:8px; height:60px; position:relative; '
+                    f'display:flex; flex-direction:column-reverse;">'
+                    f'<div style="background:{bar_color}; width:100%; height:{pos_pct:.0f}%; '
+                    f'border-radius:4px; min-height:2px;"></div></div>'
+                    f'<span style="color:#ef5350; font-size:0.65em; margin-top:2px;">${low:,.2f}</span>'
+                    f'</div>'
+                    f'</div>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
 
     st.markdown("---")
 
