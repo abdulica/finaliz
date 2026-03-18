@@ -5,7 +5,6 @@ import pandas as pd
 
 from config import ASSETS
 from data.fetcher import get_latest_prices
-from components.charts import create_mini_sparkline
 from components.analysis_card import render_disclaimer
 from utils.i18n import t, get_asset_name
 
@@ -52,20 +51,39 @@ def render_dashboard(data: dict[str, pd.DataFrame], lang: str = "tr"):
 
     st.markdown("---")
 
-    # Mini charts grid — 2 per row for better mobile compatibility
-    st.subheader("📈 " + ("Son 1 Hafta" if lang == "tr" else "Last 1 Week"))
+    # Weekly high/low summary
+    st.subheader("📊 " + ("Son 1 Hafta: En Yüksek / En Düşük" if lang == "tr" else "Last 1 Week: High / Low"))
     items = [(k, df) for k, df in data.items() if df is not None and not df.empty]
-    for row_start in range(0, len(items), 2):
-        row_items = items[row_start:row_start + 2]
-        chart_cols = st.columns(len(row_items))
-        for col, (key, df) in zip(chart_cols, row_items):
+    for row_start in range(0, len(items), 3):
+        row_items = items[row_start:row_start + 3]
+        cols = st.columns(len(row_items))
+        for col, (key, df) in zip(cols, row_items):
             name = get_asset_name(key, ASSETS[key], lang)
-            color = ASSETS[key]["color"]
+            last_7 = df.tail(7)
+            week_high = last_7["High"].max()
+            week_low = last_7["Low"].min()
+            current = last_7["Close"].iloc[-1]
+            # Position within range (0-100%)
+            rng = week_high - week_low
+            pos_pct = ((current - week_low) / rng * 100) if rng > 0 else 50
             with col:
-                st.caption(name)
-                last_7 = df["Close"].tail(7)
-                fig = create_mini_sparkline(last_7, color)
-                st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+                high_lbl = "En Yüksek" if lang == "tr" else "High"
+                low_lbl = "En Düşük" if lang == "tr" else "Low"
+                now_lbl = "Şu An" if lang == "tr" else "Current"
+                st.markdown(
+                    f'<div style="background:#1e1e2e; padding:12px; border-radius:8px; margin-bottom:8px;">'
+                    f'<div style="font-weight:bold; margin-bottom:8px; font-size:0.95em;">{name}</div>'
+                    f'<div style="display:flex; justify-content:space-between; font-size:0.8em; color:#888;">'
+                    f'<span>{low_lbl}</span><span>{high_lbl}</span></div>'
+                    f'<div style="background:#333; border-radius:4px; height:8px; margin:4px 0; position:relative;">'
+                    f'<div style="background:#FFD700; width:{pos_pct:.0f}%; height:100%; border-radius:4px;"></div></div>'
+                    f'<div style="display:flex; justify-content:space-between; font-size:0.85em;">'
+                    f'<span style="color:#ef5350;">${week_low:,.2f}</span>'
+                    f'<span style="color:#aaa;">{now_lbl}: ${current:,.2f}</span>'
+                    f'<span style="color:#26a69a;">${week_high:,.2f}</span></div>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
 
     # Market sentiment summary
     st.markdown("---")
