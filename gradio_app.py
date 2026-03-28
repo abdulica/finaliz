@@ -14,7 +14,12 @@ from data.fetcher import fetch_all_assets, fetch_macro_data, get_latest_prices
 from data.cache import get_cached, set_cached
 from data.windowing import window_for_technical, window_for_forecast
 from analysis.technical import compute_all_indicators, get_signal_summary
-from analysis.forecast import run_forecast
+try:
+    from analysis.forecast import run_forecast
+    FORECAST_AVAILABLE = True
+except Exception:
+    FORECAST_AVAILABLE = False
+    def run_forecast(*a, **k): return None
 from analysis.llm_engine import build_context
 from components.tradingview import TRADINGVIEW_SYMBOLS
 from config import ASSETS
