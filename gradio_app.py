@@ -176,6 +176,8 @@ CSS = """
 body,.gradio-container{background:#0e1117!important;color:#e0e0e0!important}
 footer{display:none!important}
 .asset-cb fieldset>div,.asset-cb .wrap{display:flex!important;flex-wrap:wrap!important;flex-direction:row!important;gap:4px!important}
+.btn-col{display:flex!important;flex-direction:column!important;gap:2px!important;padding:0!important}
+.btn-col button{margin:0!important;width:100%!important}
 """
 
 with gr.Blocks(title="Finaliz", css=CSS) as demo:
@@ -196,11 +198,10 @@ div[role="tablist"] button[aria-selected="true"]{color:#FFD700!important;border-
                 value=list(ASSET_TICKERS.values()),
                 label="Varlıklar", interactive=True,
                 elem_classes=["asset-cb"])
-        with gr.Column(scale=0, min_width=110):
-            with gr.Row():
-                lang_btn_tr = gr.Button("TR", variant="primary", size="sm")
-                lang_btn_en = gr.Button("EN", variant="secondary", size="sm")
-            refresh_btn = gr.Button("🔄 Yenile", size="sm")
+        with gr.Column(scale=0, min_width=70, elem_classes=["btn-col"]):
+            lang_btn_tr = gr.Button("TR", variant="primary", size="sm")
+            lang_btn_en = gr.Button("EN", variant="secondary", size="sm")
+            refresh_btn = gr.Button("🔄", size="sm")
 
     with gr.Tabs():
         with gr.Tab("🏠 Genel Bakış"):
