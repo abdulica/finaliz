@@ -1,6 +1,13 @@
 .env
+venv/
 __pycache__/
 *.pyc
-.streamlit/
-venv/
-.venv/
+*.pyo
+.DS_Store
+*.log
+app.py
+gradio_demo.py
+views/
+components/sidebar.py
+components/analysis_card.py
+components/charts.py

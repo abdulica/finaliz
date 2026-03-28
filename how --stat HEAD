@@ -1,0 +1,3 @@
+[33m9ed314b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31mhf/main[m[33m)[m fix: remove gradio version conflict, let HF use its own
+[33m99d852e[m fix: remove prophet for faster HF build
+[33ma91841f[m fix: python 3.10 + gradio 4.44.1 for HF compatibility

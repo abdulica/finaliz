@@ -15,6 +15,7 @@ from analysis.technical import (
 from analysis.seasonal import compute_seasonal_pattern, get_seasonal_commentary
 from analysis.qa_engine import is_question, generate_answer
 from components.charts import create_candlestick_chart, create_seasonal_chart
+from components.tradingview import tradingview_chart
 from data.windowing import window_for_technical, window_for_seasonal
 from components.analysis_card import (
     render_commentary,
@@ -103,10 +104,14 @@ def _render_single_asset(
 
     st.markdown("---")
 
-    # Main chart
+    # Main chart — TradingView canlı grafik
     st.subheader(t("ta_title", lang))
-    fig = create_candlestick_chart(df, asset_key, lang=lang)
-    st.plotly_chart(fig, use_container_width=True)
+    tradingview_chart(asset_key, height=450)
+
+    # Plotly detay grafik (indikatörlerle)
+    with st.expander("📉 " + ("İndikatör Detay Grafiği" if lang == "tr" else "Indicator Detail Chart"), expanded=False):
+        fig = create_candlestick_chart(df, asset_key, lang=lang)
+        st.plotly_chart(fig, use_container_width=True)
 
     # Support / Resistance
     sr = compute_support_resistance(df)
@@ -126,34 +131,10 @@ def _render_single_asset(
 
     st.markdown("---")
 
-    # External context / question input
-    ext_label = (
-        "📝 Soru sorun veya harici bağlam girin (ör: 'Swap açılırsa ne olur?', 'OPEC üretim kesti')"
-        if lang == "tr"
-        else "📝 Ask a question or provide context (e.g., 'What if rates drop?', 'OPEC cut production')"
-    )
-    external_context = st.text_area(
-        ext_label, value="", height=80,
-        key=f"ext_context_detail_{asset_key}",
-    )
-
-    # Detect if input is a question or context
-    user_input = external_context.strip() if external_context else ""
-    if user_input and is_question(user_input):
-        # Q&A mode
-        qa_title = "💬 " + ("Yanıt" if lang == "tr" else "Answer")
-        answer = generate_answer(user_input, df, name, asset_key, lang)
-        render_commentary([answer], qa_title, unified=True)
-
-        # Still show technical commentary below (without external context)
-        title = "📊 " + ("Teknik Yorum" if lang == "tr" else "Technical Commentary")
-        comments = generate_commentary(df, name, lang, asset_key=asset_key)
-        render_commentary(comments, title, unified=True)
-    else:
-        # Context mode (original behavior)
-        title = "💬 " + ("Teknik Yorum" if lang == "tr" else "Technical Commentary")
-        comments = generate_commentary(df, name, lang, external_context=external_context, asset_key=asset_key)
-        render_commentary(comments, title, unified=True)
+    # --- Teknik yorum (kural motoru) ---
+    st.subheader("📊 " + ("Teknik Yorum" if lang == "tr" else "Technical Commentary"))
+    comments = generate_commentary(df, name, lang, asset_key=asset_key)
+    render_commentary(comments, unified=True)
 
     # Seasonal analysis (uses full 5y data for pattern depth, with recency weighting)
     df_seasonal = window_for_seasonal(df_full)

@@ -189,18 +189,49 @@ div[role="tablist"] button:hover{color:#ddd!important}
 div[role="tablist"] button[aria-selected="true"]{color:#FFD700!important;border-bottom:3px solid #FFD700!important;background:rgba(255,215,0,0.07)!important;border-radius:4px 4px 0 0!important}
 </style>""")
 
-    gr.Markdown("# 📊 Finaliz — Finansal Analiz Platformu")
+    # Başlık + TR/EN linkleri tek satırda
+    gr.HTML("""
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 4px;">
+      <span style="font-size:1.6em;font-weight:700;color:#fff;">📊 Finaliz — Finansal Analiz Platformu</span>
+      <div style="display:flex;gap:16px;align-items:center;">
+        <a id="link-tr" href="#" onclick="triggerBtn('btn-tr');return false;"
+           style="color:#FFD700;font-weight:700;font-size:1em;text-decoration:none;">TR</a>
+        <span style="color:#444;">|</span>
+        <a id="link-en" href="#" onclick="triggerBtn('btn-en');return false;"
+           style="color:#666;font-weight:700;font-size:1em;text-decoration:none;">EN</a>
+        <span style="color:#444;">|</span>
+        <a href="#" onclick="triggerBtn('btn-refresh');return false;"
+           style="color:#aaa;font-size:1em;text-decoration:none;">Verileri Güncelle</a>
+      </div>
+    </div>
+    <script>
+    function triggerBtn(id) {
+      var btn = document.getElementById(id);
+      if(btn) btn.click();
+      if(id==='btn-tr'){
+        document.getElementById('link-tr').style.color='#FFD700';
+        document.getElementById('link-en').style.color='#666';
+      } else if(id==='btn-en'){
+        document.getElementById('link-tr').style.color='#666';
+        document.getElementById('link-en').style.color='#FFD700';
+      }
+    }
+    </script>
+    """)
 
     with gr.Row():
-        with gr.Column(scale=8):
-            asset_cb = gr.CheckboxGroup(
-                choices=list(ASSET_TICKERS.values()),
-                value=list(ASSET_TICKERS.values()),
-                label="Varlıklar", interactive=True,
-                elem_classes=["asset-cb"])
-            lang_btn_tr = gr.Button("TR", variant="primary", size="sm")
-            lang_btn_en = gr.Button("EN", variant="secondary", size="sm")
-            refresh_btn = gr.Button("🔄", size="sm")
+        asset_cb = gr.CheckboxGroup(
+            choices=list(ASSET_TICKERS.values()),
+            value=list(ASSET_TICKERS.values()),
+            label="Varlıklar", interactive=True,
+            elem_classes=["asset-cb"])
+
+    # Görünmez Gradio butonları — HTML linkler tarafından tetiklenir
+    with gr.Row(visible=False):
+        lang_btn_tr = gr.Button("TR", elem_id="btn-tr")
+        lang_btn_en = gr.Button("EN", elem_id="btn-en")
+        refresh_btn = gr.Button("Refresh", elem_id="btn-refresh")
+    lang_radio = gr.Radio(["TR","EN"], value="TR", label="", visible=False, interactive=True)
 
     with gr.Tabs():
         with gr.Tab("🏠 Genel Bakış"):
@@ -235,9 +266,7 @@ div[role="tablist"] button[aria-selected="true"]{color:#FFD700!important;border-
     # Handlers
     lang_state = gr.State("tr")
 
-    def set_tr(): return "tr", gr.update(variant="primary"), gr.update(variant="secondary")
-    def set_en(): return "en", gr.update(variant="secondary"), gr.update(variant="primary")
-
+    def on_lang(val): return "tr" if val=="TR" else "en"
     def load_dash(lang): return price_cards(lang)
     def on_detail(name, lang): k=name_to_key(name); return tv_embed(k), ta_card(k,lang)
     def on_fc_dd(name): return tv_embed(name_to_key(name), height=400)
@@ -287,8 +316,11 @@ div[role="tablist"] button[aria-selected="true"]{color:#FFD700!important;border-
     demo.load(on_detail, inputs=[detail_dd,lang_state], outputs=[detail_tv,detail_ta])
     demo.load(on_fc_dd, inputs=[fc_dd], outputs=[fc_tv])
 
-    lang_btn_tr.click(set_tr, outputs=[lang_state, lang_btn_tr, lang_btn_en]).then(load_dash,[lang_state],[dash_html]).then(on_detail,[detail_dd,lang_state],[detail_tv,detail_ta])
-    lang_btn_en.click(set_en, outputs=[lang_state, lang_btn_tr, lang_btn_en]).then(load_dash,[lang_state],[dash_html]).then(on_detail,[detail_dd,lang_state],[detail_tv,detail_ta])
+    def set_tr(): return "tr"
+    def set_en(): return "en"
+
+    lang_btn_tr.click(set_tr, outputs=[lang_state]).then(load_dash,[lang_state],[dash_html]).then(on_detail,[detail_dd,lang_state],[detail_tv,detail_ta])
+    lang_btn_en.click(set_en, outputs=[lang_state]).then(load_dash,[lang_state],[dash_html]).then(on_detail,[detail_dd,lang_state],[detail_tv,detail_ta])
     refresh_btn.click(on_refresh,[lang_state],[dash_html])
     detail_dd.change(on_detail,[detail_dd,lang_state],[detail_tv,detail_ta])
     fc_dd.change(on_fc_dd,[fc_dd],[fc_tv])
