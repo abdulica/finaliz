@@ -198,7 +198,6 @@ div[role="tablist"] button[aria-selected="true"]{color:#FFD700!important;border-
                 value=list(ASSET_TICKERS.values()),
                 label="Varlıklar", interactive=True,
                 elem_classes=["asset-cb"])
-        with gr.Column(scale=0, min_width=70, elem_classes=["btn-col"]):
             lang_btn_tr = gr.Button("TR", variant="primary", size="sm")
             lang_btn_en = gr.Button("EN", variant="secondary", size="sm")
             refresh_btn = gr.Button("🔄", size="sm")
@@ -268,7 +267,10 @@ div[role="tablist"] button[aria-selected="true"]{color:#FFD700!important;border-
 
     def submit(msg, hist, names, lang):
         if not msg or not msg.strip(): return
-        hist=hist or []; keys=[name_to_key(n) for n in (names or [])]
+        hist = hist or []
+        # names listesi geçersiz değer içerebilir, filtrele
+        valid_names = [n for n in (names or []) if n in ASSET_TICKERS.values()]
+        keys = [name_to_key(n) for n in valid_names]
         partial=""
         for token in stream_chat(msg,hist,keys,lang):
             partial=token
