@@ -30,8 +30,8 @@ def get_data(force=False):
     if cached and not force:
         return cached, get_cached("macro") or {}
     print("Veriler çekiliyor...")
-    ad = fetch_all_assets("5y")
-    md = fetch_macro_data(period_years=5)
+    ad = fetch_all_assets("1y")  # Deploy'da 1y yeterli, daha hızlı
+    md = {}  # FRED verisi deploy'da atla, yavaşlatıyor
     set_cached("assets_5y", ad)
     set_cached("macro", md)
     return ad, md
@@ -290,5 +290,7 @@ div[role="tablist"] button[aria-selected="true"]{color:#FFD700!important;border-
     clr_btn.click(lambda:[],outputs=[chatbot])
 
 if __name__ == "__main__":
-    print("🚀 http://localhost:7860")
-    demo.launch(server_port=7860, inbrowser=True)
+    import os
+    port = int(os.environ.get("PORT", 7860))
+    print(f"🚀 http://localhost:{port}")
+    demo.launch(server_name="0.0.0.0", server_port=port, inbrowser=False)
