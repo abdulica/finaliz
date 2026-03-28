@@ -3,7 +3,7 @@
 # Asset definitions: all priced in USD
 ASSETS = {
     "DXY": {
-        "ticker": "DX=F",
+        "ticker": "DX-Y.NYB",
         "name_tr": "Dolar Endeksi (DXY)",
         "name_en": "US Dollar Index (DXY)",
         "category": "currency",
@@ -74,14 +74,13 @@ ASSETS = {
         "color": "#2ca02c",
         "source": "yfinance",
     },
-    "IRON": {
-        "ticker": None,
-        "fred_series": "PIORECRUSDM",
-        "name_tr": "Demir Cevheri (USD/ton)",
-        "name_en": "Iron Ore (USD/ton)",
+    "BRENT": {
+        "ticker": "BZ=F",
+        "name_tr": "Brent Petrol (USD/varil)",
+        "name_en": "Brent Crude (USD/barrel)",
         "category": "commodity",
-        "color": "#8B4513",
-        "source": "fred",
+        "color": "#2ca02c",
+        "source": "yfinance",
     },
 }
 
