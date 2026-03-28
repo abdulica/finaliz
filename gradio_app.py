@@ -197,8 +197,9 @@ div[role="tablist"] button[aria-selected="true"]{color:#FFD700!important;border-
                 label="Varlıklar", interactive=True,
                 elem_classes=["asset-cb"])
         with gr.Column(scale=0, min_width=110):
-            lang_btn_tr = gr.Button("TR", variant="primary", size="sm")
-            lang_btn_en = gr.Button("EN", variant="secondary", size="sm")
+            with gr.Row():
+                lang_btn_tr = gr.Button("TR", variant="primary", size="sm")
+                lang_btn_en = gr.Button("EN", variant="secondary", size="sm")
             refresh_btn = gr.Button("🔄 Yenile", size="sm")
 
     with gr.Tabs():
@@ -209,8 +210,10 @@ div[role="tablist"] button[aria-selected="true"]{color:#FFD700!important;border-
             detail_tv = gr.HTML()
             detail_ta = gr.HTML()
         with gr.Tab("🔮 Tahmin"):
-            fc_dd = gr.Dropdown(choices=list(ASSET_TICKERS.values()), value=ASSET_TICKERS["GOLD"], label="Varlık")
-            fc_btn = gr.Button("▶ Tahmini Çalıştır", variant="primary")
+            with gr.Row():
+                fc_dd = gr.Dropdown(choices=list(ASSET_TICKERS.values()), value=ASSET_TICKERS["GOLD"], label="Varlık")
+                fc_btn = gr.Button("▶ Tahmini Çalıştır", variant="primary")
+            fc_tv = gr.HTML()
             fc_status = gr.Markdown("")
             fc_table = gr.Dataframe(headers=["Periyot","Tahmin","Δ%","Alt","Üst","Yön"], interactive=False, visible=False)
             fc_chart = gr.Plot(visible=False)
@@ -237,6 +240,7 @@ div[role="tablist"] button[aria-selected="true"]{color:#FFD700!important;border-
 
     def load_dash(lang): return price_cards(lang)
     def on_detail(name, lang): k=name_to_key(name); return tv_embed(k), ta_card(k,lang)
+    def on_fc_dd(name): return tv_embed(name_to_key(name), height=400)
     def on_refresh(lang): get_data(force=True); return price_cards(lang)
 
     def on_forecast(name):
@@ -278,11 +282,13 @@ div[role="tablist"] button[aria-selected="true"]{color:#FFD700!important;border-
 
     demo.load(load_dash, inputs=[lang_state], outputs=[dash_html])
     demo.load(on_detail, inputs=[detail_dd,lang_state], outputs=[detail_tv,detail_ta])
+    demo.load(on_fc_dd, inputs=[fc_dd], outputs=[fc_tv])
 
     lang_btn_tr.click(set_tr, outputs=[lang_state, lang_btn_tr, lang_btn_en]).then(load_dash,[lang_state],[dash_html]).then(on_detail,[detail_dd,lang_state],[detail_tv,detail_ta])
     lang_btn_en.click(set_en, outputs=[lang_state, lang_btn_tr, lang_btn_en]).then(load_dash,[lang_state],[dash_html]).then(on_detail,[detail_dd,lang_state],[detail_tv,detail_ta])
     refresh_btn.click(on_refresh,[lang_state],[dash_html])
     detail_dd.change(on_detail,[detail_dd,lang_state],[detail_tv,detail_ta])
+    fc_dd.change(on_fc_dd,[fc_dd],[fc_tv])
     fc_btn.click(on_forecast,[fc_dd],[fc_status,fc_table,fc_chart])
     cmp_btn.click(on_compare,[cmp_a,cmp_b],[cmp_chart])
     chat_in.submit(submit,[chat_in,chatbot,asset_cb,lang_state],[chatbot,chat_in])
