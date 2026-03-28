@@ -1,15 +1,13 @@
 ---
 title: Finaliz
-emoji: 📊
-colorFrom: yellow
-colorTo: gray
+emoji: 🔥
+colorFrom: indigo
+colorTo: yellow
 sdk: gradio
-sdk_version: 4.44.1
-app_file: gradio_app.py
+sdk_version: 6.10.0
+app_file: app.py
 pinned: false
-license: mit
+short_description: finansal robot
 ---
 
-# 📊 Finaliz — Finansal Analiz Platformu
-
-Döviz, emtia ve kripto piyasaları için gerçek zamanlı teknik analiz ve AI destekli yorum.
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
